@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<!-- saved from url=(0064)file:///Users/fatihboncukluoglu/Downloads/ai-concepts-map_4.html -->
+<html lang="tr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Concept Map</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Clash+Display:wght@400;600;700&display=swap');
+
+:root {
+  --bg: #05050a;
+  --surface: #0d0d15;
+  --border: #1a1a2e;
+  --text: #dde1f0;
+  --muted: #4a5070;
+
+  --c0: #ff6b35;   /* Düşünme */
+  --c1: #00d4aa;   /* Araç */
+  --c2: #7b61ff;   /* Çok Ajan */
+  --c3: #f0b429;   /* Bellek */
+  --c4: #e84393;   /* Güvenlik */
+  --c5: #38bdf8;   /* Bağlam */
+  --c6: #a3e635;   /* Döngü */
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  height: 100vh;
+  overflow: hidden;
+  cursor: default;
+  user-select: none;
+}
+
+/* Animated background grid */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Radial glow center */
+body::after {
+  content: '';
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(ellipse, rgba(123,97,255,0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Header */
+.hdr {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(5,5,10,0.85);
+  backdrop-filter: blur(12px);
+}
+
+.hdr-title {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.hdr-title span { color: #7b61ff; }
+
+.legend {
+  display: flex;
+  gap: 20px;
+}
+
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.leg-item:hover { color: var(--text); }
+.leg-item.active { color: var(--text); border-color: var(--border); background: rgba(255,255,255,0.03); }
+
+.leg-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+/* Detail panel */
+.detail {
+  position: fixed;
+  right: -380px;
+  top: 73px;
+  bottom: 0;
+  width: 360px;
+  background: rgba(13,13,21,0.97);
+  border-left: 1px solid var(--border);
+  z-index: 40;
+  transition: right 0.4s cubic-bezier(0.16,1,0.3,1);
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(20px);
+}
+
+.detail.open { right: 0; }
+
+.detail-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-cat {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.detail-name {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.detail-en {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.detail-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.detail-desc {
+  font-size: 13px;
+  line-height: 1.8;
+  color: #a0a8c0;
+  margin-bottom: 20px;
+}
+
+.detail-qa {
+  padding: 14px 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.detail-qa-label {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  opacity: 0.7;
+}
+
+.detail-qa-text { color: var(--text); }
+
+.detail-rel {
+  margin-top: 20px;
+}
+
+.detail-rel-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.rel-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rel-chip {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rel-chip:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.15);
+}
+
+.close-btn {
+  position: absolute;
+  top: 20px; right: 20px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--border);
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+/* Tooltip */
+.tooltip {
+  position: fixed;
+  background: rgba(13,13,21,0.95);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0;
+  transition: opacity 0.15s;
+  max-width: 200px;
+  backdrop-filter: blur(8px);
+}
+
+.tooltip.show { opacity: 1; }
+.tooltip-name { font-weight: 500; margin-bottom: 3px; }
+.tooltip-cat { font-size: 10px; color: var(--muted); }
+
+/* Category filter buttons */
+.filters {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 40;
+  background: rgba(13,13,21,0.9);
+  padding: 8px;
+  border-radius: 40px;
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.filter-btn {
+  padding: 6px 16px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.filter-btn:hover { color: var(--text); }
+.filter-btn.active { color: #000; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-title">AI <span>Concept</span> Map</div>
+  <div class="legend" id="legend"><div class="leg-item"><div class="leg-dot" style="background:#ff6b35"></div>Reasoning</div><div class="leg-item"><div class="leg-dot" style="background:#00d4aa"></div>Tools</div><div class="leg-item"><div class="leg-dot" style="background:#7b61ff"></div>Multi-Agent</div><div class="leg-item"><div class="leg-dot" style="background:#f0b429"></div>Memory</div><div class="leg-item"><div class="leg-dot" style="background:#e84393"></div>Safety</div><div class="leg-item"><div class="leg-dot" style="background:#38bdf8"></div>Context</div><div class="leg-item"><div class="leg-dot" style="background:#a3e635"></div>Loop</div></div>
+  <div class="hint">click node → details | drag → reposition</div>
+</div>
+
+<canvas id="c" width="1512" height="828" style="cursor: default;"></canvas>
+
+<div class="detail" id="detail">
+  <button class="close-btn" onclick="closeDetail()">✕</button>
+  <div class="detail-header">
+    <div class="detail-cat" id="d-cat"></div>
+    <div class="detail-name" id="d-name"></div>
+    <div class="detail-en" id="d-en"></div>
+  </div>
+  <div class="detail-body">
+    <div class="detail-desc" id="d-desc"></div>
+    <div class="detail-qa" id="d-qa"></div>
+    <div class="detail-rel" id="d-rel"></div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip" style="left: 758px; top: 106px;">
+  <div class="tooltip-name" id="tt-name">Tool Use / Function Calling</div>
+  <div class="tooltip-cat" id="tt-cat">Araç Kullanımı · Tools</div>
+</div>
+
+<div class="filters" id="filters"><button class="filter-btn active" style="background: rgba(255, 255, 255, 0.08); color: rgb(255, 255, 255);">All</button><button class="filter-btn">Reasoning</button><button class="filter-btn">Tools</button><button class="filter-btn">Multi-Agent</button><button class="filter-btn">Memory</button><button class="filter-btn">Safety</button><button class="filter-btn">Context</button><button class="filter-btn">Loop</button></div>
+
+<script>
+const CATS = [
+  { id: 0, name: 'Reasoning',  color: '#ff6b35' },
+  { id: 1, name: 'Tools',      color: '#00d4aa' },
+  { id: 2, name: 'Multi-Agent',color: '#7b61ff' },
+  { id: 3, name: 'Memory',     color: '#f0b429' },
+  { id: 4, name: 'Safety',     color: '#e84393' },
+  { id: 5, name: 'Context',    color: '#38bdf8' },
+  { id: 6, name: 'Loop',       color: '#a3e635' },
+];
+
+const NODES_DATA = [
+  // Cat 0: Düşünme
+  {
+    id: 'cot', cat: 0,
+    tr: 'Zincir Düşünce', en: 'Chain of Thought',
+    desc: 'Agent\'ın adım adım düşünme sürecidir. Sorunu parçalara bölerek her adımı ayrı ayrı değerlendirir ve bu ara adımları açıkça yazar. Doğruluk oranını ciddi biçimde artırır.',
+    qa: 'QA\'da: "Login testini yaz" dediğinde Claude önce sayfayı analiz eder, sonra selector\'ları belirler, sonra test adımlarını sıralar.',
+    related: ['react', 'reflection', 'tot']
+  },
+  {
+    id: 'react', cat: 0,
+    tr: 'Düşün & Yap', en: 'ReAct (Reason + Act)',
+    desc: 'Düşün → Araç kullan → Sonucu gözlemle → Tekrar düşün döngüsüdür. Tüm agent mimarilerinin temel çalışma prensibi budur.',
+    qa: 'QA\'da: Playwright\'ı çalıştır (Act) → Hata var mı gör (Observe) → Selector\'ı düzelt (Reason) → Tekrar çalıştır (Act)',
+    related: ['cot', 'agentic_loop', 'tool_use']
+  },
+  {
+    id: 'reflection', cat: 0,
+    tr: 'Yansıma', en: 'Reflection',
+    desc: 'Agent kendi ürettiği çıktıyı geri dönüp eleştirel gözle değerlendiriyor ve iyileştiriyor. Kalite kontrol mekanizması gibi çalışır.',
+    qa: 'QA\'da: Test kodu yazıldıktan sonra "Bu kod page object pattern\'e uyuyor mu?" diye kendine sorar ve gerekirse yeniden düzenler.',
+    related: ['cot', 'guardrails', 'react']
+  },
+  {
+    id: 'tot', cat: 0,
+    tr: 'Düşünce Ağacı', en: 'Tree of Thought',
+    desc: 'Tek bir yol yerine birden fazla olasılığı paralel olarak değerlendirir. Dal dal ilerleyerek en iyi çözüm yolunu seçer.',
+    qa: 'QA\'da: Hatalı bir selector için 3 farklı alternatif üretir, hangisinin en sağlam olduğunu analiz ederek seçer.',
+    related: ['cot', 'reflection']
+  },
+
+  // Cat 1: Araç
+  {
+    id: 'tool_use', cat: 1,
+    tr: 'Araç Kullanımı', en: 'Tool Use / Function Calling',
+    desc: 'MCP\'nin içindeki temel mekanizmadır. LLM hangi harici fonksiyonun çağrılacağına, hangi parametrelerle çağrılacağına karar verir.',
+    qa: 'QA\'da: "Playwright\'ı çalıştır" yerine Claude tam olarak hangi test fonksiyonunun, hangi selector ile çağrılacağını belirler.',
+    related: ['mcp', 'rag', 'agentic_loop']
+  },
+  {
+    id: 'mcp', cat: 1,
+    tr: 'Model Bağlam Protokolü', en: 'MCP (Model Context Protocol)',
+    desc: 'Claude\'un dış sistemlere (DB, Playwright, Jira, dosya sistemi) bağlandığı standart protokoldür. USB gibi düşünebilirsin — her araç için ayrı adaptör değil, tek bir standart.',
+    qa: 'QA\'da: PostgreSQL\'den senaryo çek, Playwright\'ı tetikle, Jira\'ya ticket aç — hepsi MCP üzerinden.',
+    related: ['tool_use', 'orchestrator', 'cli']
+  },
+  {
+    id: 'rag', cat: 1,
+    tr: 'Alım Destekli Üretim', en: 'RAG (Retrieval-Augmented Generation)',
+    desc: 'Modelin bilgisini harici verilerle zenginleştirme tekniğidir. Önce bilgi deposundan ilgili içerik çekilir, sonra bu bağlamla cevap üretilir.',
+    qa: 'QA\'da: "Sipariş modülünü test et" deyince DB\'den o modüle ait tüm test senaryoları çekilip Claude\'a bağlam olarak verilir.',
+    related: ['vector_db', 'embeddings', 'tool_use', 'memory_ext']
+  },
+  {
+    id: 'vector_db', cat: 1,
+    tr: 'Vektör Veritabanı', en: 'Vector Database',
+    desc: 'Metni anlam bazlı (semantik) olarak arayabilen özel veritabanıdır. pgvector, Pinecone, Weaviate örnekleridir. "Login" yazınca sadece tam eşleşme değil, kavramsal olarak benzer senaryolar da gelir.',
+    qa: 'QA\'da: Test senaryolarını embedding ile saklar. "Ödeme hatası" aradığında "checkout failure", "payment error" senaryolarını da bulur.',
+    related: ['embeddings', 'rag', 'memory_ext']
+  },
+  {
+    id: 'embeddings', cat: 1,
+    tr: 'Gömme Vektörleri', en: 'Embeddings',
+    desc: 'Metni çok boyutlu sayısal vektöre çeviren modeldir. Anlamsal yakınlık, bu vektörler arasındaki mesafe ile ölçülür. Vektör DB\'nin yakıtıdır.',
+    qa: 'QA\'da: Her test senaryosu bir vektöre dönüştürülür. Benzer senaryolar vektör uzayında birbirine yakın konumlanır.',
+    related: ['vector_db', 'rag']
+  },
+
+  // Cat 2: Çok Ajan
+  {
+    id: 'multi_agent', cat: 2,
+    tr: 'Çok Ajan Sistemi', en: 'Multi-Agent',
+    desc: 'Birden fazla özelleşmiş agent\'ın birbirine iş devredererek çalıştığı mimaridir. Her agent kendi alanında uzman olur.',
+    qa: 'QA\'da: Senaryo Üretici Agent → Test Yazıcı Agent → Test Koşucu Agent → Rapor Agent zinciri.',
+    related: ['orchestrator', 'handoff', 'subagent']
+  },
+  {
+    id: 'orchestrator', cat: 2,
+    tr: 'Orkestratör', en: 'Orchestrator',
+    desc: 'Diğer agent\'ları yöneten, iş bölümü yapan üst seviye agent\'tır. Planı o yapar, icraatı subagent\'lara devreder.',
+    qa: 'QA\'da: Ana QA Agent hangi modülün hangi subagent tarafından test edileceğine karar verir ve sonuçları toplar.',
+    related: ['multi_agent', 'subagent', 'handoff']
+  },
+  {
+    id: 'subagent', cat: 2,
+    tr: 'Alt Ajan', en: 'Subagent',
+    desc: 'Orkestratörden görev alarak belirli bir işi icra eden özelleşmiş agent\'tır. Kendi araçlarına ve bilgisine sahiptir.',
+    qa: 'QA\'da: Sadece Playwright bilen "Test Koşucu" subagent veya sadece Jira bilen "Ticket Yazıcı" subagent.',
+    related: ['orchestrator', 'multi_agent']
+  },
+  {
+    id: 'handoff', cat: 2,
+    tr: 'Devir Teslim', en: 'Handoff',
+    desc: 'Bir agent\'tan diğerine tam bağlamın (ne yapıldı, ne bulundu, ne gerekiyor) aktarılmasıdır. Bağlam kaybı olmadan estafet koşusu gibi.',
+    qa: 'QA\'da: Test Koşucu Agent → "3 test fail, selector bozuk, ekran görüntüsü ekte" → Analiz Agent\'ına devir.',
+    related: ['multi_agent', 'orchestrator', 'memory_episodic']
+  },
+
+  // Cat 3: Bellek
+  {
+    id: 'memory_ctx', cat: 3,
+    tr: 'Anlık Bellek', en: 'In-Context Memory',
+    desc: 'Mevcut konuşma penceresindeki geçici bellektir. Oturum kapandığında silinir. Context window sınırı kadar tutulabilir.',
+    qa: 'QA\'da: O test oturumunda yazılan kod, verilen kararlar, çıkan hatalar — oturum bitince gider.',
+    related: ['context_window', 'memory_ext', 'memory_episodic']
+  },
+  {
+    id: 'memory_ext', cat: 3,
+    tr: 'Dış Bellek', en: 'External Memory',
+    desc: 'Oturumlar arası kalıcı bilgi deposudur. Dosyalarda, DB\'de veya vektör DB\'de saklanır. Senin memory.md\'in tam budur.',
+    qa: 'QA\'da: memory.md içindeki staging URL, DB bağlantısı, bilinen kırılgan selector\'lar — kalıcı ve her oturumda erişilebilir.',
+    related: ['memory_ctx', 'vector_db', 'rag', 'memory_episodic']
+  },
+  {
+    id: 'memory_episodic', cat: 3,
+    tr: 'Epizodik Bellek', en: 'Episodic Memory',
+    desc: 'Geçmiş oturumların özetlenmiş halidir. "Geçen hafta sipariş testinde ne oldu?" sorusunu yanıtlayabilir.',
+    qa: 'QA\'da: Her test koşusunun sonuç özeti saklanır. Agent zamanla "bu modül her Cuma fail veriyor" örüntüsünü öğrenir.',
+    related: ['memory_ext', 'memory_ctx', 'handoff']
+  },
+  {
+    id: 'memory_semantic', cat: 3,
+    tr: 'Semantik Bellek', en: 'Semantic Memory',
+    desc: 'Genel bilgi tabanıdır. RAG ve vector DB ile beslenen, alan bilgisi deposu. "Playwright best practice nedir?" sorusunu buradan yanıtlar.',
+    qa: 'QA\'da: Tüm test standartları, naming convention\'lar, bilinen hata kalıpları bu bellekte birikir.',
+    related: ['rag', 'vector_db', 'memory_ext']
+  },
+
+  // Cat 4: Güvenlik
+  {
+    id: 'guardrails', cat: 4,
+    tr: 'Koruma Rayları', en: 'Guardrails',
+    desc: 'Agent\'ın yapamayacaklarını, sınırlarını belirleyen kurallar bütünüdür. CLAUDE.md\'deki tüm kısıtlamalar guardrail\'dir.',
+    qa: 'QA\'da: "Onaysız dosya silme", ".env\'e dokunma", "production\'a otomatik push etme" gibi kurallar.',
+    related: ['hitl', 'grounding', 'system_prompt']
+  },
+  {
+    id: 'hitl', cat: 4,
+    tr: 'İnsan Döngüde', en: 'Human-in-the-Loop',
+    desc: 'Kritik ya da geri alınamaz adımlarda insanı onaya sokan mekanizmadır. Tam otonom ile sıfır otonom arasındaki altın orta yoldur.',
+    qa: 'QA\'da: Production\'a test atmadan önce "Onaylıyor musunuz?" sorusu. Jira ticket açmadan özet gösterme.',
+    related: ['guardrails', 'grounding', 'checkpointing']
+  },
+  {
+    id: 'grounding', cat: 4,
+    tr: 'Gerçeğe Bağlama', en: 'Grounding',
+    desc: 'Hallüsinasyonu (uydurma) önlemek için modelin cevabını gerçek, doğrulanmış veriye bağlama tekniğidir.',
+    qa: 'QA\'da: Test senaryolarını Claude\'un hayal etmesine bırakmak yerine gerçek DB\'den çekmek. RAG\'ın amacı budur.',
+    related: ['rag', 'guardrails', 'hitl']
+  },
+
+  // Cat 5: Bağlam
+  {
+    id: 'context_window', cat: 5,
+    tr: 'Bağlam Penceresi', en: 'Context Window',
+    desc: 'LLM\'in aynı anda görebildiği ve işleyebildiği maksimum metin miktarıdır. Token sayısıyla ölçülür. Bu pencere dolunca eski bilgiler düşer.',
+    qa: 'QA\'da: Çok uzun test dosyaları veya büyük DB sorgu sonuçları context\'i doldurabilir. Bu yüzden özetleme ve dış bellek önemlidir.',
+    related: ['token', 'memory_ctx', 'system_prompt']
+  },
+  {
+    id: 'system_prompt', cat: 5,
+    tr: 'Sistem Komutu', en: 'System Prompt',
+    desc: 'Agent\'a kimliğini, davranış kurallarını ve görev bağlamını söyleyen talimat bloğudur. CLAUDE.md\'in sohbet içindeki karşılığıdır.',
+    qa: 'QA\'da: "Sen bir QA mühendisisin, TypeScript yazarsın, Türkçe yanıtlarsın, onaysız dosya silmezsin."',
+    related: ['guardrails', 'context_window', 'prompt_eng']
+  },
+  {
+    id: 'prompt_eng', cat: 5,
+    tr: 'Komut Mühendisliği', en: 'Prompt Engineering',
+    desc: 'System prompt ve skill talimatlarını optimize etme sanatıdır. Doğru kelimeler, doğru yapı — çıktı kalitesini dramatik biçimde değiştirir.',
+    qa: 'QA\'da: SKILL.md içindeki talimatlar ne kadar net ve spesifik olursa, üretilen test kodu o kadar kaliteli olur.',
+    related: ['system_prompt', 'guardrails', 'cot']
+  },
+  {
+    id: 'token', cat: 5,
+    tr: 'Token', en: 'Token',
+    desc: 'LLM\'in ölçü birimidir. Yaklaşık 3/4 kelime veya 4 karakter bir token sayılır. Context window, maliyet ve hız token ile ölçülür.',
+    qa: 'QA\'da: Büyük test suite\'leri token tüketir. Agent\'ı verimli tutmak için gereksiz çıktıyı azaltmak önemlidir.',
+    related: ['context_window', 'streaming']
+  },
+  {
+    id: 'cli', cat: 5,
+    tr: 'Komut Satırı Arayüzü', en: 'CLI',
+    desc: 'Claude\'a terminal üzerinden komut gönderdiğin arayüzdür. Tek başına sohbet eder, MCP ile bağlandığında gerçek işlem yapar.',
+    qa: 'QA\'da: `claude "login testlerini çalıştır"` komutunun gönderildiği kapı.',
+    related: ['mcp', 'agentic_loop', 'system_prompt']
+  },
+
+  // Cat 6: Döngü
+  {
+    id: 'agentic_loop', cat: 6,
+    tr: 'Ajan Döngüsü', en: 'Agentic Loop',
+    desc: 'Agent\'ın "düşün → araç kullan → gözlemle → tekrar" döngüsünü hedefe ulaşana kadar sürdürmesidir. İnsan müdahalesi olmadan ilerler.',
+    qa: 'QA\'da: Test fail → Hata analiz et → Selector güncelle → Tekrar test et → Pass olana kadar döngü devam eder.',
+    related: ['react', 'tool_use', 'checkpointing', 'streaming']
+  },
+  {
+    id: 'streaming', cat: 6,
+    tr: 'Akış', en: 'Streaming',
+    desc: 'Agent cevabı tamamen bitirmeden kelime kelime, gerçek zamanlı olarak göndermesidir. Terminalde canlı çıktı gibi görünür.',
+    qa: 'QA\'da: Test sonuçları bitmeden adım adım terminale akar. Uzun süren test koşularında neler olduğunu canlı görebilirsin.',
+    related: ['agentic_loop', 'cli', 'token']
+  },
+  {
+    id: 'checkpointing', cat: 6,
+    tr: 'Kontrol Noktası', en: 'Checkpointing',
+    desc: 'Uzun agent akışında ara durumu kaydetme tekniğidir. Hata veya kesinti olursa baştan değil, son kontrol noktasından devam edilir.',
+    qa: 'QA\'da: 47 testlik suite\'te 23. testte crash olursa, 1\'den değil 23\'ten devam eder. Zaman ve kaynak tasarrufu.',
+    related: ['agentic_loop', 'hitl', 'memory_ext']
+  },
+];
+
+// Build adjacency
+const nodeMap = {};
+NODES_DATA.forEach(n => { nodeMap[n.id] = n; });
+
+// Canvas setup
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', () => { resize(); layoutNodes(); });
+
+// Node positions
+const nodes = NODES_DATA.map(d => ({
+  ...d,
+  x: 0, y: 0,
+  vx: 0, vy: 0,
+  r: 0,
+  alpha: 1,
+  hovered: false,
+  selected: false,
+}));
+
+// Force-directed layout
+function layoutNodes() {
+  const cx = W / 2, cy = H / 2;
+  const groups = {};
+  CATS.forEach(c => { groups[c.id] = []; });
+  nodes.forEach(n => groups[n.cat].push(n));
+
+  const catCount = CATS.length;
+  CATS.forEach((cat, ci) => {
+    const angle = (ci / catCount) * Math.PI * 2 - Math.PI / 2;
+    const orbitR = Math.min(W, H) * 0.36;
+    const gx = cx + Math.cos(angle) * orbitR;
+    const gy = cy + Math.sin(angle) * orbitR;
+
+    const members = groups[cat.id];
+    members.forEach((n, i) => {
+      const spread = members.length === 1 ? 0 : (i / (members.length - 1) - 0.5) * 200;
+      const perpAngle = angle + Math.PI / 2;
+      n.x = gx + Math.cos(perpAngle) * spread + (Math.random() - 0.5) * 10;
+      n.y = gy + Math.sin(perpAngle) * spread + (Math.random() - 0.5) * 10;
+      n.r = 28;
+    });
+  });
+}
+
+layoutNodes();
+
+// Physics simulation (simple)
+function simulate() {
+  const repulse = 6000;
+  const spring = 0.008;
+  const damping = 0.82;
+  const centerPull = 0.0008;
+
+  nodes.forEach(a => {
+    // Repulsion — label-aware: push extra if nodes are very close
+    nodes.forEach(b => {
+      if (a === b) return;
+      const dx = a.x - b.x, dy = a.y - b.y;
+      const d = Math.sqrt(dx*dx + dy*dy) || 1;
+      if (d < 260) {
+        const f = repulse / (d * d);
+        a.vx += (dx / d) * f;
+        a.vy += (dy / d) * f;
+      }
+    });
+    // Center pull
+    a.vx += (W/2 - a.x) * centerPull;
+    a.vy += (H/2 - a.y) * centerPull;
+    // Damping
+    a.vx *= damping;
+    a.vy *= damping;
+    a.x += a.vx;
+    a.y += a.vy;
+    // Bounds — leave room for labels (80px top, 100px bottom for filter bar)
+    a.x = Math.max(90, Math.min(W-90, a.x));
+    a.y = Math.max(110, Math.min(H-110, a.y));
+  });
+
+  // Spring edges
+  nodes.forEach(a => {
+    (a.related || []).forEach(rid => {
+      const b = nodes.find(n => n.id === rid);
+      if (!b) return;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.sqrt(dx*dx + dy*dy) || 1;
+      const target = 240;
+      const f = (d - target) * spring;
+      a.vx += (dx/d) * f;
+      a.vy += (dy/d) * f;
+    });
+  });
+}
+
+// Rendering
+let selectedId = null;
+let filterCat = null;
+let simRuns = 0;
+
+function getNodeAlpha(n) {
+  if (filterCat !== null && n.cat !== filterCat) return 0.12;
+  if (selectedId) {
+    const sel = nodes.find(x => x.id === selectedId);
+    if (!sel) return 0.3;
+    if (n.id === selectedId) return 1;
+    if (sel.related && sel.related.includes(n.id)) return 0.9;
+    return 0.15;
+  }
+  return 1;
+}
+
+function getEdgeAlpha(a, b) {
+  if (filterCat !== null && (a.cat !== filterCat && b.cat !== filterCat)) return 0;
+  if (filterCat !== null && (a.cat !== filterCat || b.cat !== filterCat)) return 0.06;
+  if (selectedId) {
+    const sel = nodes.find(x => x.id === selectedId);
+    if (!sel) return 0.04;
+    if ((a.id === selectedId && sel.related?.includes(b.id)) ||
+        (b.id === selectedId && sel.related?.includes(a.id))) return 0.7;
+    return 0.03;
+  }
+  return 0.1;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Draw edges
+  nodes.forEach(a => {
+    (a.related || []).forEach(rid => {
+      const b = nodes.find(n => n.id === rid);
+      if (!b || b.id < a.id) return; // draw once
+      const alpha = getEdgeAlpha(a, b);
+      if (alpha < 0.01) return;
+
+      const catA = CATS[a.cat], catB = CATS[b.cat];
+      const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+      grad.addColorStop(0, catA.color + Math.round(alpha * 255).toString(16).padStart(2,'0'));
+      grad.addColorStop(1, catB.color + Math.round(alpha * 255).toString(16).padStart(2,'0'));
+
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = a.id === selectedId || b.id === selectedId ? 1.5 : 1;
+      ctx.stroke();
+    });
+  });
+
+  // Draw nodes
+  nodes.forEach(n => {
+    const alpha = getNodeAlpha(n);
+    const cat = CATS[n.cat];
+    const color = cat.color;
+    const r = n.r + (n.hovered ? 5 : 0) + (n.id === selectedId ? 6 : 0);
+
+    // Glow
+    if (alpha > 0.5) {
+      const glow = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 3);
+      glow.addColorStop(0, color + '25');
+      glow.addColorStop(1, color + '00');
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r * 3, 0, Math.PI * 2);
+      ctx.fillStyle = glow;
+      ctx.fill();
+    }
+
+    // Circle
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(13,13,21,${alpha})`;
+    ctx.fill();
+    ctx.strokeStyle = color + Math.round(alpha * 255).toString(16).padStart(2,'0');
+    ctx.lineWidth = n.id === selectedId ? 2.5 : 1.5;
+    ctx.stroke();
+
+    // Inner dot
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = color + Math.round(alpha * 200).toString(16).padStart(2,'0');
+    ctx.fill();
+
+    // Label — compact EN name inside / below node with bg pill
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Build short label (strip parentheticals)
+    const shortEn = n.en
+      .replace(/ \(.*?\)/g, '')
+      .replace(' / Function Calling', '')
+      .replace('-Augmented Generation', '')
+      .replace('Model Context Protocol', 'MCP')
+      .replace('Retrieval-Augmented', 'RAG')
+      .replace('Human-in-the-Loop', 'Human-in-Loop');
+
+    const enWords = shortEn.split(' ');
+    // Split into max 2 lines
+    const half = Math.ceil(enWords.length / 2);
+    const line1 = enWords.length > 2 ? enWords.slice(0, half).join(' ') : shortEn;
+    const line2 = enWords.length > 2 ? enWords.slice(half).join(' ') : null;
+
+    const fontSize = 11;
+    ctx.font = `500 ${fontSize}px "DM Mono"`;
+    const lw1 = ctx.measureText(line1).width;
+    const lw2 = line2 ? ctx.measureText(line2).width : 0;
+    const maxLw = Math.max(lw1, lw2);
+    const lineH = 14;
+    const totalH = line2 ? lineH * 2 : lineH;
+    const pillPadX = 7, pillPadY = 4;
+    const pillW = maxLw + pillPadX * 2;
+    const pillH = totalH + pillPadY * 2;
+
+    // Draw pill background below node
+    const py = n.y + r + 6;
+    const px = n.x - pillW / 2;
+    ctx.fillStyle = `rgba(8,8,16,${alpha * 0.82})`;
+    ctx.strokeStyle = cat.color + Math.round(alpha * 80).toString(16).padStart(2,'0');
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    const pr = 5;
+    ctx.moveTo(px + pr, py);
+    ctx.lineTo(px + pillW - pr, py);
+    ctx.quadraticCurveTo(px + pillW, py, px + pillW, py + pr);
+    ctx.lineTo(px + pillW, py + pillH - pr);
+    ctx.quadraticCurveTo(px + pillW, py + pillH, px + pillW - pr, py + pillH);
+    ctx.lineTo(px + pr, py + pillH);
+    ctx.quadraticCurveTo(px, py + pillH, px, py + pillH - pr);
+    ctx.lineTo(px, py + pr);
+    ctx.quadraticCurveTo(px, py, px + pr, py);
+    ctx.closePath();
+    ctx.fill();
+    if (alpha > 0.4) ctx.stroke();
+
+    // Text
+    ctx.fillStyle = `rgba(220,225,240,${alpha})`;
+    ctx.font = `500 ${fontSize}px "DM Mono"`;
+    if (line2) {
+      ctx.fillText(line1, n.x, py + pillPadY + lineH * 0.5);
+      ctx.fillText(line2, n.x, py + pillPadY + lineH * 1.5);
+    } else {
+      ctx.fillText(line1, n.x, py + pillH / 2);
+    }
+
+    // Turkish label above node — only when hovered
+    if (n.hovered) {
+      const trLabel = n.tr;
+      const trWords = trLabel.split(' ');
+      const boxPad = 8;
+      ctx.font = '500 12px "DM Mono"';
+      const tlineH = 17;
+      const tlines = trWords.length <= 3 ? [trLabel] : [
+        trWords.slice(0, Math.ceil(trWords.length/2)).join(' '),
+        trWords.slice(Math.ceil(trWords.length/2)).join(' ')
+      ];
+      const maxW = Math.max(...tlines.map(l => ctx.measureText(l).width));
+      const boxW = maxW + boxPad * 2;
+      const boxH = tlines.length * tlineH + boxPad * 2;
+      const bx = n.x - boxW / 2;
+      const by = n.y - r - boxH - 10;
+
+      ctx.fillStyle = 'rgba(13,13,21,0.95)';
+      ctx.strokeStyle = cat.color + 'cc';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      const br = 6;
+      ctx.moveTo(bx + br, by);
+      ctx.lineTo(bx + boxW - br, by);
+      ctx.quadraticCurveTo(bx + boxW, by, bx + boxW, by + br);
+      ctx.lineTo(bx + boxW, by + boxH - br);
+      ctx.quadraticCurveTo(bx + boxW, by + boxH, bx + boxW - br, by + boxH);
+      ctx.lineTo(bx + br, by + boxH);
+      ctx.quadraticCurveTo(bx, by + boxH, bx, by + boxH - br);
+      ctx.lineTo(bx, by + br);
+      ctx.quadraticCurveTo(bx, by, bx + br, by);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Small triangle pointer
+      ctx.fillStyle = 'rgba(13,13,21,0.95)';
+      ctx.strokeStyle = cat.color + 'cc';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(n.x - 6, by + boxH);
+      ctx.lineTo(n.x + 6, by + boxH);
+      ctx.lineTo(n.x, by + boxH + 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = cat.color;
+      ctx.font = '600 12px "DM Mono"';
+      tlines.forEach((line, i) => {
+        ctx.fillText(line, n.x, by + boxPad + tlineH * i + tlineH / 2);
+      });
+    }
+  });
+}
+
+// Animation loop
+let lastSim = 0;
+function loop(ts) {
+  if (simRuns < 400) {
+    if (ts - lastSim > 16) { simulate(); lastSim = ts; simRuns++; }
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// Mouse interaction
+let mx = 0, my = 0;
+let dragging = null, dragOffX = 0, dragOffY = 0;
+
+canvas.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  if (dragging) {
+    dragging.x = mx + dragOffX;
+    dragging.y = my + dragOffY;
+    dragging.vx = 0; dragging.vy = 0;
+    return;
+  }
+  let found = null;
+  nodes.forEach(n => {
+    const d = Math.hypot(n.x - mx, n.y - my);
+    n.hovered = d < n.r + 8;
+    if (n.hovered) found = n;
+  });
+  canvas.style.cursor = found ? 'pointer' : 'default';
+  const tt = document.getElementById('tooltip');
+  if (found) {
+    document.getElementById('tt-name').textContent = found.en;
+    document.getElementById('tt-cat').textContent = found.tr + ' · ' + CATS[found.cat].name;
+    tt.style.left = (mx + 16) + 'px';
+    tt.style.top = (my - 10) + 'px';
+    tt.classList.add('show');
+  } else {
+    tt.classList.remove('show');
+  }
+});
+
+canvas.addEventListener('mousedown', e => {
+  nodes.forEach(n => {
+    const d = Math.hypot(n.x - e.clientX, n.y - e.clientY);
+    if (d < n.r + 8) {
+      dragging = n;
+      dragOffX = n.x - e.clientX;
+      dragOffY = n.y - e.clientY;
+    }
+  });
+});
+
+canvas.addEventListener('mouseup', e => {
+  if (dragging) {
+    const d = Math.hypot(dragging.x - (e.clientX + dragOffX), dragging.y - (e.clientY + dragOffY));
+    if (d < 5) openDetail(dragging.id);
+  }
+  dragging = null;
+});
+
+canvas.addEventListener('click', e => {
+  let found = null;
+  nodes.forEach(n => {
+    const d = Math.hypot(n.x - e.clientX, n.y - e.clientY);
+    if (d < n.r + 8) found = n;
+  });
+  if (found) openDetail(found.id);
+  else { selectedId = null; closeDetail(); }
+});
+
+// Detail panel
+function openDetail(id) {
+  const n = nodes.find(x => x.id === id);
+  if (!n) return;
+  selectedId = id;
+  const cat = CATS[n.cat];
+
+  document.getElementById('d-cat').textContent = cat.name;
+  document.getElementById('d-cat').style.color = cat.color;
+  document.getElementById('d-name').textContent = n.en;
+  document.getElementById('d-name').style.color = cat.color;
+  document.getElementById('d-en').textContent = '→ ' + n.tr;
+
+  document.getElementById('d-desc').textContent = n.desc;
+
+  const qa = document.getElementById('d-qa');
+  qa.style.background = cat.color + '12';
+  qa.style.borderLeft = `3px solid ${cat.color}`;
+  qa.innerHTML = `<div class="detail-qa-label" style="color:${cat.color}">In QA Tool</div><div class="detail-qa-text">${n.qa}</div>`;
+
+  const rel = document.getElementById('d-rel');
+  if (n.related && n.related.length) {
+    rel.innerHTML = `<div class="detail-rel-label">Related Concepts</div><div class="rel-chips">${
+      n.related.map(rid => {
+        const rn = nodeMap[rid];
+        if (!rn) return '';
+        const rc = CATS[rn.cat].color;
+        return `<span class="rel-chip" style="border-color:${rc}22;color:${rc}" onclick="openDetail('${rid}')">${rn.en}</span>`;
+      }).join('')
+    }</div>`;
+  } else {
+    rel.innerHTML = '';
+  }
+
+  document.getElementById('detail').classList.add('open');
+}
+
+function closeDetail() {
+  selectedId = null;
+  document.getElementById('detail').classList.remove('open');
+}
+
+// Legend
+const legend = document.getElementById('legend');
+CATS.forEach(cat => {
+  const el = document.createElement('div');
+  el.className = 'leg-item';
+  el.innerHTML = `<div class="leg-dot" style="background:${cat.color}"></div>${cat.name}`;
+  el.onclick = () => {
+    filterCat = filterCat === cat.id ? null : cat.id;
+    document.querySelectorAll('.leg-item').forEach(e => e.classList.remove('active'));
+    document.querySelectorAll('.filter-btn').forEach(e => e.classList.remove('active'));
+    if (filterCat !== null) {
+      el.classList.add('active');
+      document.querySelectorAll('.filter-btn')[cat.id + 1].classList.add('active');
+    }
+  };
+  legend.appendChild(el);
+});
+
+// Filter buttons
+const filtersEl = document.getElementById('filters');
+const allBtn = document.createElement('button');
+allBtn.className = 'filter-btn active';
+allBtn.textContent = 'All';
+allBtn.style.background = 'rgba(255,255,255,0.08)';
+allBtn.style.color = '#fff';
+allBtn.onclick = () => {
+  filterCat = null;
+  selectedId = null;
+  closeDetail();
+  document.querySelectorAll('.filter-btn').forEach(b => { b.classList.remove('active'); b.style.background=''; b.style.color=''; });
+  allBtn.classList.add('active');
+  allBtn.style.background = 'rgba(255,255,255,0.08)';
+  allBtn.style.color = '#fff';
+  document.querySelectorAll('.leg-item').forEach(e => e.classList.remove('active'));
+};
+filtersEl.appendChild(allBtn);
+
+CATS.forEach((cat, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'filter-btn';
+  btn.textContent = cat.name;
+  btn.onclick = () => {
+    filterCat = filterCat === cat.id ? null : cat.id;
+    selectedId = null;
+    closeDetail();
+    document.querySelectorAll('.filter-btn').forEach(b => { b.classList.remove('active'); b.style.background=''; b.style.color=''; });
+    document.querySelectorAll('.leg-item').forEach(e => e.classList.remove('active'));
+    if (filterCat !== null) {
+      btn.classList.add('active');
+      btn.style.background = cat.color;
+      btn.style.color = '#000';
+      legend.children[i].classList.add('active');
+    } else {
+      allBtn.classList.add('active');
+      allBtn.style.background = 'rgba(255,255,255,0.08)';
+      allBtn.style.color = '#fff';
+    }
+  };
+  filtersEl.appendChild(btn);
+});
+</script>
+
+
+</body></html>
